@@ -214,8 +214,14 @@ function renderConversation() {
   conversation.forEach((turn) => {
     const item = document.createElement("article");
     item.className = `conversation-turn ${turn.role}`;
-    const role = turn.role === "user" ? "User" : "Assistant";
-    item.innerHTML = `<strong>${role}</strong><p></p>`;
+    const role =
+      turn.role === "assistant" && turn.state
+        ? `Assistant - State: ${turn.state}`
+        : turn.role === "user"
+          ? "User"
+          : "Assistant";
+    item.innerHTML = `<strong></strong><p></p>`;
+    item.querySelector("strong").textContent = role;
     item.querySelector("p").textContent = turn.content;
     conversationLog.appendChild(item);
   });
@@ -266,6 +272,7 @@ async function renderTranscriptSessions() {
           transcript.messages.map((message) => ({
             role: message.role,
             content: message.content,
+            state: message.role === "assistant" ? message.stateBefore : null,
           }))
         );
         let loadedModel = "loaded";
@@ -612,10 +619,11 @@ testPromptForm.addEventListener("submit", async (event) => {
   openaiResponse.textContent = "Calling OpenAI and evaluating state...";
 
   try {
+    const respondingState = getSelectedState()?.name || null;
     const result = await runMachineTest(testContextWindow.textContent, prompt, conversation);
     const assistantMessage = result.assistantMessage || result.text || "(no text returned)";
     setSessionId(result.sessionId);
-    conversation.push({ role: "assistant", content: assistantMessage });
+    conversation.push({ role: "assistant", content: assistantMessage, state: respondingState });
     openaiModelLabel.textContent = result.model;
     openaiResponse.textContent = `state: ${result.nextStateName || "none"}\nreason: ${
       result.stateReason || "No state reason returned."
