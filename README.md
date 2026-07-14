@@ -47,7 +47,7 @@ This creates a non-trivial customer support triage machine for testing state tra
 
 ## Documents
 
-The app includes a documents page backed by SQLite. It stores the product overview and the theory behind context-resident state machines.
+The app includes a documents page backed by SQLite. It stores the product overview, the theory behind context-resident state machines, and the white paper draft in `docs/resident_state_machine_white_paper.md`.
 
 ## Run The Local Checks
 

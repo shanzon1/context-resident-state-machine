@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parent
 DB_PATH = ROOT / "context_machines.db"
 ENV_PATH = ROOT / ".env"
+WHITE_PAPER_PATH = ROOT / "docs" / "resident_state_machine_white_paper.md"
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
 
 
@@ -234,6 +235,17 @@ SQLite stores machines, states, associations, documents, and eventually test run
 The product goal is to let users design these machines without requiring implementation language like nodes, edges, orchestration frameworks, or hidden workflow code.""",
             ),
         )
+        if WHITE_PAPER_PATH.exists():
+            db.execute(
+                """
+                INSERT OR IGNORE INTO documents (title, body)
+                VALUES (?, ?)
+                """,
+                (
+                    "White paper: Resident state machines for LLM execution",
+                    WHITE_PAPER_PATH.read_text(encoding="utf-8"),
+                ),
+            )
         db.commit()
 
 
