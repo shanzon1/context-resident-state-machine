@@ -35,6 +35,36 @@ In this model, the LLM is not asked to freely infer the entire task structure at
 
 A resident state machine is a state machine serialized into the prompt context and preserved across interactions.
 
+Formally, a resident state machine can be represented as:
+
+```text
+RSM = (S, T, B, s_current, C_loaded)
+```
+
+Where:
+
+- `S` is a finite set of named states.
+- `T` is a finite set of valid transitions, where each transition is a tuple `(s_from, s_to, reason)`.
+- `B` is a context-binding function that maps each state to state-specific instructions or context: `B(s) -> context`.
+- `s_current` is the active state at the start of an interaction.
+- `C_loaded` is the active context inserted into the prompt for the current state, where `C_loaded = B(s_current)`.
+
+For a single interaction, the model receives the machine topology, the current state, valid transition reasoning, the loaded state context, and the most recent user input. It returns an assistant response plus a proposed next state:
+
+```text
+execute(RSM, user_input) -> (assistant_response, s_next, transition_reason)
+```
+
+The next state must satisfy:
+
+```text
+s_next = s_current
+or
+(s_current, s_next, reason) in T
+```
+
+The option to remain in `s_current` allows the system to avoid premature transition when the active state still requires more evidence.
+
 At minimum, it contains:
 
 ```text
@@ -90,7 +120,22 @@ An example structured state decision is:
 }
 ```
 
-## 5. Determinism
+## 5. Why Resident Execution Fits Autoregressive Transformers
+
+Autoregressive transformers generate each next token conditioned on the preceding context. A resident state machine uses this property directly: the execution controller is placed inside the conditioning context rather than hidden outside the model. The model's next-token distribution is therefore conditioned not only on the conversation, but also on an explicit current state, a finite transition set, and state-specific execution instructions.
+
+This alignment matters because the model does not need to reconstruct the task phase solely from conversational history. The active state and valid next states are present in the same context window used for generation. The resident machine acts as a local execution frame that biases the model toward one state-specific behavior and one bounded state decision.
+
+The model still generates language probabilistically. Resident execution does not make token output deterministic. Instead, it gives the model a stable computational scaffold:
+
+- the current state identifies the active task mode;
+- the loaded state context supplies local instructions;
+- transition reasoning narrows the next-state decision;
+- the emitted state decision makes the execution path inspectable.
+
+In this sense, resident execution fits autoregressive behavior because it turns state into conditioning context. The machine is not an external controller issuing invisible commands; it is part of the sequence the model attends to when producing the next response.
+
+## 6. Determinism
 
 The resident state machine improves structural determinism by narrowing the model's execution choices. The model does not need to choose from an unbounded set of possible task modes. It chooses from the current state's valid transitions.
 
@@ -103,7 +148,7 @@ This does not make the model deterministic in the mathematical sense, nor does i
 
 The resulting execution trace can be inspected after the fact.
 
-## 6. Traceability
+## 7. Traceability
 
 Traceability is one of the strongest practical benefits of the resident state machine.
 
@@ -129,7 +174,7 @@ Reason: User supplied product, account, error text, browser, start time, and sco
 
 This creates a lightweight execution audit trail.
 
-## 7. Task Execution
+## 8. Task Execution
 
 The resident state machine is useful when the task has recognizable phases. A customer support triage workflow might include:
 
@@ -142,7 +187,7 @@ Escalate -> Close
 
 The workflow remains explicitly represented throughout execution, reducing reliance on implicit reconstruction from conversational history. The model's job is to execute the active state and choose a valid next state.
 
-## 8. Experimental Prototype
+## 9. Experimental Prototype
 
 The prototype application implements a simple resident state machine builder and testing harness.
 
@@ -157,13 +202,13 @@ It supports:
 - Running a live conversation against the machine.
 - Saving test transcripts for analysis.
 
-### 8.1 Prototype Architecture
+### 9.1 Prototype Architecture
 
 The prototype separates machine design from machine testing. The browser builds the resident context from the selected machine: state names, associations, transition reasoning, current state, and the loaded state context. The backend then wraps that resident context with the recent conversation transcript, the most recent user message, the valid next states, and the transition reasons from the current state before calling the model.
 
 This means the resident machine is visible to the model, but the prototype also supplies a narrow decision frame for the current turn.
 
-### 8.2 Prototype Enforcement Model
+### 9.2 Prototype Enforcement Model
 
 The prototype uses two enforcement layers.
 
@@ -173,7 +218,7 @@ Second, the backend validates the returned state decision before applying it. If
 
 This distinction is important: the resident state machine is the conceptual controller, while the prototype implementation adds guardrails around model output.
 
-### 8.3 Experimental Method
+### 9.3 Experimental Method
 
 The current experiment uses hand-authored demo machines and OpenAI-backed live conversation runs. Each run is saved to SQLite as a test session with user messages, assistant messages, state-before, state-after, transition reason, model name, and raw model output. The current fixture exports those machines and transcripts into `fixtures/demo_state_machines.json` so the experiment state can be loaded and inspected by future users.
 
@@ -183,7 +228,7 @@ In a customer support triage test, a vague login issue began in `Intake`, moved 
 
 This illustrates the core hypothesis: the LLM can follow a resident state machine, produce useful task responses, and emit traceable state transitions.
 
-## 9. Transcript Analysis
+## 10. Transcript Analysis
 
 The prototype currently includes four saved test sessions across three machines. These transcripts are not a statistical evaluation, but they provide early qualitative evidence about whether the resident state machine can constrain execution and produce traceable state transitions.
 
@@ -227,7 +272,7 @@ Report -> Clarify -> Classify -> Respond -> Document
 | Product Return Authorization | Return request scenario | `Receive -> Validate -> Assess -> Assess` | Advanced to assessment, then retained assessment while awaiting defect evidence | `fixtures/demo_state_machines.json` |
 | Event Incident Response | Event incident scenario | `Report -> Clarify -> Classify -> Respond -> Document` | Advanced through classification and response into incident documentation | `fixtures/demo_state_machines.json` |
 
-### 9.1 Valid Transition Following
+### 10.1 Valid Transition Following
 
 Across the transcript set, applied state changes remained within the valid transition boundary provided by the resident machine context. The model was prompted with only valid next states and the current-state retention option; the backend also validated the returned state before applying it. The assistant turns include both a response and a state decision, allowing each transition to be inspected after the interaction.
 
@@ -252,7 +297,7 @@ Diagnose -> Escalate
 
 This path is consistent with the transition reasoning encoded in the machine.
 
-### 9.2 State Retention As A Useful Outcome
+### 10.2 State Retention As A Useful Outcome
 
 Two transcripts show that remaining in the same state can be useful rather than erroneous.
 
@@ -272,7 +317,7 @@ Reason: still need defect evidence and troubleshooting results before approving 
 
 This suggests that a resident state machine should explicitly allow state retention when more evidence is needed. In the prototype, current-state retention is supplied as an allowed next state by the execution harness rather than modeled as a self-association in the machine topology. Without that option, the model may be forced into premature approval, denial, closure, or escalation.
 
-### 9.3 Traceability Of Reasoning
+### 10.3 Traceability Of Reasoning
 
 The transcript structure makes the model's execution path auditable. Each assistant turn records:
 
@@ -283,7 +328,7 @@ The transcript structure makes the model's execution path auditable. Each assist
 
 This allows post-hoc analysis of both task response quality and state transition quality. Instead of asking only whether the assistant's text sounded reasonable, the reviewer can ask whether the model was executing the correct state and whether the selected transition followed the machine definition.
 
-### 9.4 Early Findings
+### 10.4 Early Findings
 
 These initial transcripts support three early observations:
 
@@ -293,7 +338,7 @@ These initial transcripts support three early observations:
 
 These observations are preliminary. The transcript set is small, hand-designed, domain-specific, and generated from cooperative scenarios rather than adversarial or highly ambiguous ones. A stronger evaluation would require repeated trials, independent scoring of transition correctness, and comparison against prompts without resident state machines.
 
-## 10. Explicit Non-Goals
+## 11. Explicit Non-Goals
 
 This paper does not address:
 
@@ -310,7 +355,7 @@ This paper does not address:
 
 These may be useful extensions, but including them here would dilute the central claim.
 
-## 11. Future Work
+## 12. Future Work
 
 Future papers can build outward from this foundation:
 
@@ -321,7 +366,7 @@ Future papers can build outward from this foundation:
 
 Each extension should preserve the core discipline of making execution state explicit, inspectable, and resident in context.
 
-## 12. Conclusion
+## 13. Conclusion
 
 A resident state machine offers a narrow, inspectable mechanism for constraining LLM execution across interactions. By embedding the machine directly into context, the model can act as a state executor rather than a free-form conversational agent.
 
