@@ -59,6 +59,28 @@ python run_demo_simulations.py
 
 Those simulations save transcripts into the local SQLite database for analysis.
 
+## Load The Current Demo Data
+
+The repository includes a fixture with the current demo machines and saved transcripts:
+
+```text
+fixtures/demo_state_machines.json
+```
+
+Load it into the local SQLite database with:
+
+```powershell
+python demo_data.py load
+```
+
+Validate the fixture without changing the database:
+
+```powershell
+python demo_data.py validate
+```
+
+Refresh the browser after loading the fixture. The machine library will include the demo machines, and each machine's test page will include its saved transcripts.
+
 ## Documents
 
 The app includes a documents page backed by SQLite. It stores the product overview, the theory behind context-resident state machines, and the white paper draft in `docs/resident_state_machine_white_paper.md`.
@@ -67,6 +89,7 @@ The app includes a documents page backed by SQLite. It stores the product overvi
 
 ```powershell
 python -m unittest
+python demo_data.py validate
 ```
 
 ## Render The Current CER Prompt
