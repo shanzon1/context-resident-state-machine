@@ -1,0 +1,5 @@
+.env
+context_machines.db
+server.out.log
+server.err.log
+__pycache__/

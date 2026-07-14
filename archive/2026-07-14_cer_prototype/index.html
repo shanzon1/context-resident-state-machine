@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CER State Machine Demo</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="runtime-pane" aria-labelledby="context-title">
+        <div class="pane-header">
+          <div>
+            <p class="eyebrow">Contextual Execution Runtime</p>
+            <h1 id="context-title">Live Context</h1>
+          </div>
+          <button id="resetButton" class="secondary-button" type="button">Reset</button>
+        </div>
+
+        <div class="state-strip" aria-label="State progress">
+          <div class="state-node active" data-state-node="EXPLORE">EXPLORE</div>
+          <div class="state-link"></div>
+          <div class="state-node" data-state-node="EVALUATE">EVALUATE</div>
+          <div class="state-link"></div>
+          <div class="state-node" data-state-node="REFINE">REFINE</div>
+        </div>
+
+        <pre id="contextView" class="context-view" aria-live="polite"></pre>
+      </section>
+
+      <section class="control-pane" aria-labelledby="control-title">
+        <div class="pane-header compact">
+          <div>
+            <p class="eyebrow">Simulated OpenAI API</p>
+            <h2 id="control-title">Execute One Turn</h2>
+          </div>
+          <div class="turn-pill">Turn <span id="turnValue">1</span></div>
+        </div>
+
+        <form id="runtimeForm" class="runtime-form">
+          <label for="userInput">User input</label>
+          <textarea id="userInput" name="userInput" rows="5" placeholder="Describe the problem or direction for the next state."></textarea>
+          <button class="primary-button" type="submit">Submit</button>
+        </form>
+
+        <div class="summary-grid" aria-label="Current runtime values">
+          <div class="metric">
+            <span>Current State</span>
+            <strong id="currentStateValue">EXPLORE</strong>
+          </div>
+          <div class="metric">
+            <span>Next Transition</span>
+            <strong id="transitionValue">EXPLORE -> EVALUATE</strong>
+          </div>
+        </div>
+
+        <section class="object-panel" aria-labelledby="object-title">
+          <h2 id="object-title">Working Object</h2>
+          <dl>
+            <dt>Proposal</dt>
+            <dd id="proposalValue">None</dd>
+            <dt>Critique</dt>
+            <dd id="critiqueValue">None</dd>
+            <dt>Revision</dt>
+            <dd id="revisionValue">None</dd>
+          </dl>
+        </section>
+
+        <section class="response-panel" aria-labelledby="response-title">
+          <h2 id="response-title">Last API Response</h2>
+          <pre id="responseView">No response yet.</pre>
+        </section>
+
+        <section class="history-panel" aria-labelledby="history-title">
+          <h2 id="history-title">Execution History</h2>
+          <ol id="historyList"></ol>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

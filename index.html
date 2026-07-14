@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>context-resident state machine</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main>
+      <section id="libraryPage" class="page library-page" aria-labelledby="library-title">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Machine Library</p>
+            <h1 id="library-title">context-resident state machine</h1>
+          </div>
+          <div class="header-actions">
+            <button id="documentsButton" class="secondary-button" type="button">Documents</button>
+            <button id="resetButton" class="secondary-button" type="button">Reset</button>
+          </div>
+        </header>
+
+        <form id="machineForm" class="machine-create-form">
+          <label for="machineName">New machine</label>
+          <div class="input-row">
+            <input id="machineName" name="machineName" type="text" placeholder="Machine name" required>
+            <button class="primary-button" type="submit">Create</button>
+          </div>
+        </form>
+
+        <section class="editor-section" aria-labelledby="machine-list-title">
+          <div class="section-header">
+            <h2 id="machine-list-title">Created machines</h2>
+            <span id="machineCount" class="count-pill">0 machines</span>
+          </div>
+          <div id="machineList" class="machine-grid"></div>
+        </section>
+      </section>
+
+      <section id="builderPage" class="page builder-page hidden" aria-labelledby="builder-title">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Builder</p>
+            <h1 id="builder-title">context-resident state machine</h1>
+            <p id="activeMachineName" class="subhead">No machine selected</p>
+          </div>
+          <div class="header-actions">
+            <button id="testButton" class="primary-button" type="button">Machine testing</button>
+            <button id="backButton" class="secondary-button" type="button">Machines</button>
+          </div>
+        </header>
+
+        <div class="builder-shell">
+          <section class="config-panel" aria-labelledby="state-config-title">
+            <header class="section-header top">
+              <div>
+                <p class="eyebrow">State Definition</p>
+                <h2 id="state-config-title">States and associations</h2>
+              </div>
+              <span id="stateCount" class="count-pill">0 states</span>
+            </header>
+
+            <form id="stateForm" class="inline-form">
+              <label for="stateName">New state</label>
+              <input id="stateName" name="stateName" type="text" placeholder="State name" required>
+
+              <label for="newStateContext">State context</label>
+              <textarea id="newStateContext" name="newStateContext" rows="5" placeholder="Describe the context bound to this state." required></textarea>
+
+              <button class="primary-button" type="submit">Add state</button>
+            </form>
+
+            <section class="editor-section" aria-labelledby="state-list-title">
+              <h3 id="state-list-title">States</h3>
+              <div id="stateList" class="state-list"></div>
+            </section>
+
+            <form id="associationForm" class="association-form">
+              <h3>Association</h3>
+              <label for="fromState">From state</label>
+              <select id="fromState" name="fromState"></select>
+
+              <label for="toState">To state</label>
+              <select id="toState" name="toState"></select>
+
+              <label for="transitionReason">Reason to choose this transition</label>
+              <textarea id="transitionReason" name="transitionReason" rows="4" placeholder="Describe when this transition should be chosen."></textarea>
+
+              <button class="primary-button" type="submit">Add association</button>
+            </form>
+
+            <section class="editor-section" aria-labelledby="association-list-title">
+              <h3 id="association-list-title">Associations</h3>
+              <div id="associationList" class="association-list-panel"></div>
+            </section>
+
+            <section class="editor-section durability-note" aria-labelledby="durability-title">
+              <h3 id="durability-title">Durability suggestion</h3>
+              <p>SQLite is a good next step for saved state machines: one table for machines, one for states, and one for associations.</p>
+            </section>
+          </section>
+
+          <section class="workspace" aria-labelledby="context-title">
+            <header class="section-header top">
+              <div>
+                <p class="eyebrow">Preview</p>
+                <h2 id="context-title">LLM context</h2>
+              </div>
+            </header>
+
+            <section class="context-preview-panel" aria-labelledby="context-preview-title">
+              <div class="section-header">
+                <h3 id="context-preview-title">Loaded state</h3>
+              </div>
+              <label for="loadedStateSelect">State context</label>
+              <select id="loadedStateSelect" name="loadedStateSelect"></select>
+              <pre id="contextPreview" aria-live="polite"></pre>
+            </section>
+          </section>
+        </div>
+      </section>
+
+      <section id="testPage" class="page test-page hidden" aria-labelledby="test-title">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Machine testing</p>
+            <h1 id="test-title">context-resident state machine</h1>
+            <p id="testMachineName" class="subhead">No machine selected</p>
+          </div>
+          <div class="header-actions">
+            <button id="testBackButton" class="secondary-button" type="button">Builder</button>
+            <button id="testMachinesButton" class="secondary-button" type="button">Machines</button>
+          </div>
+        </header>
+
+        <section class="test-shell" aria-labelledby="test-context-title">
+          <div class="section-header">
+            <h2 id="test-context-title">LLM context</h2>
+            <span id="testCurrentState" class="count-pill">state: none</span>
+          </div>
+          <pre id="testContextWindow" class="test-context-window" aria-live="polite"></pre>
+
+          <section class="conversation-panel" aria-labelledby="conversation-title">
+            <div class="section-header">
+              <h2 id="conversation-title">Conversation</h2>
+              <span id="openaiModelLabel" class="count-pill">not run</span>
+            </div>
+            <div id="conversationLog" class="conversation-log" aria-live="polite"></div>
+            <pre id="openaiResponse" class="state-decision">Waiting for the next user message.</pre>
+          </section>
+
+          <form id="testPromptForm" class="test-prompt-form">
+            <label for="userPrompt">User message</label>
+            <textarea id="userPrompt" name="userPrompt" rows="4" placeholder="Continue the conversation."></textarea>
+            <button class="primary-button" type="submit">Send</button>
+          </form>
+        </section>
+      </section>
+
+      <section id="documentsPage" class="page documents-page hidden" aria-labelledby="documents-title">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Documents</p>
+            <h1 id="documents-title">context-resident state machine</h1>
+          </div>
+          <button id="documentsBackButton" class="secondary-button" type="button">Machines</button>
+        </header>
+
+        <section class="documents-shell" aria-labelledby="document-list-title">
+          <div class="section-header">
+            <h2 id="document-list-title">Project documents</h2>
+            <span id="documentCount" class="count-pill">0 documents</span>
+          </div>
+          <div id="documentList" class="document-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
