@@ -10,6 +10,10 @@ Can a persistent state machine embedded in the context improve structural determ
 
 This paper intentionally focuses on a single resident state machine. It does not attempt to solve multi-agent orchestration, agent operating systems, persistent memory architectures, planning systems, or context compression.
 
+![Figure 1. Resident State Machine Execution Loop](figures/resident_state_machine_execution_loop.svg)
+
+**Figure 1. Resident State Machine Execution Loop.** The current state, valid transitions, transition reasoning, and loaded state context remain resident in the same context window used for generation. The model produces an assistant response and a next-state decision, which updates the resident state for the following interaction.
+
 ## 1. Problem Statement
 
 LLM applications often need to maintain continuity across turns. In practice, this continuity is frequently managed through external orchestration code, hidden application state, long prompts, tool-routing frameworks, or informal conversational memory.

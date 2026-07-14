@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Resident State Machine Execution Loop</title>
+  <desc id="desc">A publication-style diagram showing user input entering a resident context window, the LLM executing against the loaded state context, and the assistant response plus next state decision updating the resident state.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10" fill="none" stroke="#1f2937" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .page { fill: #ffffff; }
+      .title { font-family: Inter, Segoe UI, Arial, sans-serif; font-size: 28px; font-weight: 700; fill: #111827; }
+      .subtitle { font-family: Inter, Segoe UI, Arial, sans-serif; font-size: 15px; fill: #4b5563; }
+      .label { font-family: Inter, Segoe UI, Arial, sans-serif; font-size: 17px; font-weight: 650; fill: #111827; }
+      .small { font-family: Inter, Segoe UI, Arial, sans-serif; font-size: 14px; fill: #374151; }
+      .mono { font-family: Consolas, Menlo, monospace; font-size: 14px; fill: #111827; }
+      .mono-small { font-family: Consolas, Menlo, monospace; font-size: 13px; fill: #374151; }
+      .box { fill: #ffffff; stroke: #1f2937; stroke-width: 1.5; rx: 8; }
+      .soft { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.2; rx: 8; }
+      .accent { fill: #ecfeff; stroke: #0891b2; stroke-width: 1.5; rx: 8; }
+      .state { fill: #f0fdf4; stroke: #16a34a; stroke-width: 1.5; rx: 8; }
+      .line { stroke: #1f2937; stroke-width: 1.7; fill: none; marker-end: url(#arrow); }
+      .muted-line { stroke: #64748b; stroke-width: 1.2; fill: none; }
+      .dash { stroke: #64748b; stroke-width: 1.4; stroke-dasharray: 6 6; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="page" width="1200" height="760"/>
+
+  <text class="title" x="70" y="62">Resident State Machine Execution Loop</text>
+  <text class="subtitle" x="70" y="90">Execution state is resident in the same context window used for generation.</text>
+
+  <rect class="soft" x="64" y="145" width="178" height="82"/>
+  <text class="label" x="96" y="178">User input</text>
+  <text class="mono-small" x="96" y="204">u_t</text>
+
+  <rect class="box" x="324" y="118" width="412" height="408"/>
+  <text class="label" x="354" y="154">Resident context window</text>
+  <text class="mono-small" x="354" y="181">RSM = (S, T, B, s_current, C_loaded)</text>
+
+  <rect class="soft" x="354" y="214" width="158" height="66"/>
+  <text class="small" x="374" y="241">States</text>
+  <text class="mono-small" x="374" y="263">S</text>
+
+  <rect class="soft" x="546" y="214" width="158" height="66"/>
+  <text class="small" x="566" y="241">Transitions</text>
+  <text class="mono-small" x="566" y="263">T: s_i -> s_j</text>
+
+  <rect class="soft" x="354" y="306" width="158" height="66"/>
+  <text class="small" x="374" y="333">Bindings</text>
+  <text class="mono-small" x="374" y="355">B(s) -> context</text>
+
+  <rect class="state" x="546" y="306" width="158" height="66"/>
+  <text class="small" x="566" y="333">Current state</text>
+  <text class="mono-small" x="566" y="355">s_current</text>
+
+  <rect class="accent" x="354" y="402" width="350" height="84"/>
+  <text class="small" x="374" y="431">Loaded state context</text>
+  <text class="mono-small" x="374" y="456">C_loaded = B(s_current)</text>
+
+  <path class="muted-line" d="M512 339 H546"/>
+  <path class="muted-line" d="M625 372 V402"/>
+
+  <rect class="box" x="828" y="180" width="250" height="136"/>
+  <text class="label" x="875" y="222">Autoregressive LLM</text>
+  <text class="small" x="865" y="253">conditioned on resident</text>
+  <text class="small" x="887" y="276">execution context</text>
+
+  <rect class="soft" x="818" y="418" width="274" height="74"/>
+  <text class="label" x="858" y="449">Assistant response</text>
+  <text class="mono-small" x="868" y="474">message_t</text>
+
+  <rect class="accent" x="818" y="552" width="274" height="92"/>
+  <text class="label" x="858" y="584">Next state decision</text>
+  <text class="mono-small" x="858" y="610">s_next + transition_reason</text>
+  <text class="mono-small" x="858" y="632">must be valid from s_current</text>
+
+  <path class="line" d="M242 186 H324"/>
+  <path class="line" d="M736 322 C776 322 788 248 828 248"/>
+  <path class="line" d="M953 316 V418"/>
+  <path class="line" d="M953 492 V552"/>
+  <path class="dash" d="M818 598 C686 684 520 666 622 374"/>
+
+  <rect class="soft" x="64" y="580" width="576" height="96"/>
+  <text class="label" x="94" y="614">Example trace</text>
+  <text class="mono" x="94" y="644">Intake -> Clarify -> Diagnose -> Escalate</text>
+  <text class="small" x="94" y="668">Each assistant turn records the state before, state after, and transition reason.</text>
+
+  <text class="mono-small" x="780" y="104">execute(RSM, u_t) -> response_t, s_next, reason_t</text>
+</svg>
