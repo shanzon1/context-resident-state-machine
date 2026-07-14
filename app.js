@@ -233,7 +233,16 @@ function renderConversation() {
       rawButton.addEventListener("click", () => {
         showRawDialog(role, turn.raw);
       });
-      item.querySelector(".conversation-turn-meta").appendChild(rawButton);
+
+      const stateButton = document.createElement("button");
+      stateButton.type = "button";
+      stateButton.className = "raw-link";
+      stateButton.textContent = "See state";
+      stateButton.addEventListener("click", () => {
+        showStateDialog(role, turn.raw);
+      });
+
+      item.querySelector(".conversation-turn-meta").append(rawButton, stateButton);
     }
     item.querySelector("p").textContent = turn.content;
     conversationLog.appendChild(item);
@@ -244,7 +253,7 @@ function renderConversation() {
 
 function showRawDialog(title, rawText) {
   rawDialogTitle.textContent = title;
-  rawDialogBody.textContent = formatRawDecision(rawText);
+  rawDialogBody.textContent = rawText || "(no raw output saved)";
   if (typeof rawDialog.showModal === "function") {
     rawDialog.showModal();
   } else {
@@ -252,7 +261,17 @@ function showRawDialog(title, rawText) {
   }
 }
 
-function formatRawDecision(rawText) {
+function showStateDialog(title, rawText) {
+  rawDialogTitle.textContent = `${title} - State`;
+  rawDialogBody.textContent = formatStateDecision(rawText);
+  if (typeof rawDialog.showModal === "function") {
+    rawDialog.showModal();
+  } else {
+    alert(rawDialogBody.textContent);
+  }
+}
+
+function formatStateDecision(rawText) {
   if (!rawText) return "(no raw output saved)";
 
   const cleanedText = rawText.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/i, "").trim();
