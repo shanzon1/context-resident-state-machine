@@ -1,5 +1,9 @@
 # A Resident State Machine for Deterministic Context Execution in Large Language Models
 
+**Author:** Shannon Birchell  
+**Role:** Researcher / Author  
+**Date:** July 14, 2026
+
 ## Abstract
 
 Large language models are powerful autoregressive systems, but their execution across multiple interactions can be difficult to constrain, inspect, and reproduce. This paper proposes a resident state machine: a persistent state machine represented directly inside the model context. The state machine defines the active execution state, the valid transitions from that state, and the state-specific context that should be loaded for the next interaction.
