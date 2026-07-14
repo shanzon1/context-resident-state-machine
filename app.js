@@ -244,11 +244,30 @@ function renderConversation() {
 
 function showRawDialog(title, rawText) {
   rawDialogTitle.textContent = title;
-  rawDialogBody.textContent = rawText || "(no raw output saved)";
+  rawDialogBody.textContent = formatRawDecision(rawText);
   if (typeof rawDialog.showModal === "function") {
     rawDialog.showModal();
   } else {
     alert(rawDialogBody.textContent);
+  }
+}
+
+function formatRawDecision(rawText) {
+  if (!rawText) return "(no raw output saved)";
+
+  const cleanedText = rawText.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/i, "").trim();
+
+  try {
+    const parsed = JSON.parse(cleanedText);
+    const decisionOnly = {
+      assistantMessage: "[text removed]",
+      nextStateId: parsed.nextStateId ?? null,
+      nextStateName: parsed.nextStateName ?? null,
+      stateReason: parsed.stateReason ?? null,
+    };
+    return JSON.stringify(decisionOnly, null, 2);
+  } catch {
+    return rawText;
   }
 }
 
