@@ -45,6 +45,20 @@ python seed_demo_machine.py
 
 This creates a non-trivial customer support triage machine for testing state transitions.
 
+Additional demo machines can be seeded with:
+
+```powershell
+python seed_additional_machines.py
+```
+
+Real OpenAI-backed demo simulations can be run against the local server with:
+
+```powershell
+python run_demo_simulations.py
+```
+
+Those simulations save transcripts into the local SQLite database for analysis.
+
 ## Documents
 
 The app includes a documents page backed by SQLite. It stores the product overview, the theory behind context-resident state machines, and the white paper draft in `docs/resident_state_machine_white_paper.md`.
