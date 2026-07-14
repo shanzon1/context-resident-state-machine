@@ -238,8 +238,11 @@ The product goal is to let users design these machines without requiring impleme
         if WHITE_PAPER_PATH.exists():
             db.execute(
                 """
-                INSERT OR IGNORE INTO documents (title, body)
+                INSERT INTO documents (title, body)
                 VALUES (?, ?)
+                ON CONFLICT(title) DO UPDATE SET
+                    body = excluded.body,
+                    updated_at = CURRENT_TIMESTAMP
                 """,
                 (
                     "White paper: Resident state machines for LLM execution",

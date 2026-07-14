@@ -161,7 +161,101 @@ In a customer support triage test, a vague login issue began in `Intake`, moved 
 
 This illustrates the core hypothesis: the LLM can follow a resident state machine, produce useful task responses, and emit traceable state transitions.
 
-## 9. Explicit Non-Goals
+## 9. Transcript Analysis
+
+The prototype currently includes four saved test sessions across three machines. These transcripts are not a statistical evaluation, but they provide early qualitative evidence about whether the resident state machine can constrain execution and produce traceable state transitions.
+
+The saved sessions contain:
+
+```text
+3 machines
+4 test sessions
+24 transcript messages
+```
+
+The observed state paths were:
+
+```text
+Customer Support Triage:
+Resolve -> Close
+
+Customer Support Triage:
+Intake -> Clarify -> Diagnose -> Escalate -> Escalate
+
+Product Return Authorization:
+Receive -> Validate -> Assess -> Assess
+
+Event Incident Response:
+Report -> Clarify -> Classify -> Respond -> Document
+```
+
+### 9.1 Valid Transition Following
+
+Across the transcript set, the model selected next states from the valid transition set provided by the resident machine context. The assistant turns include both a response and a state decision, allowing each transition to be inspected after the interaction.
+
+For example, the customer support login issue began with an underspecified report:
+
+```text
+Intake -> Clarify
+Reason: the issue lacks required details such as product area, error message, account, or urgency
+```
+
+After the user supplied product, account, error text, browser, timing, and scope, the model selected:
+
+```text
+Clarify -> Diagnose
+```
+
+When the troubleshooting results indicated likely SSO/session infrastructure causes requiring privileged access, the model selected:
+
+```text
+Diagnose -> Escalate
+```
+
+This path is consistent with the transition reasoning encoded in the machine.
+
+### 9.2 State Retention As A Useful Outcome
+
+Two transcripts show that remaining in the same state can be useful rather than erroneous.
+
+In the customer support session, the model remained in `Escalate` after preparing an escalation package because it still needed concrete handoff artifacts:
+
+```text
+Escalate -> Escalate
+Reason: the escalation package is prepared but awaiting user IDs, timestamps, HAR/screenshots, and logs
+```
+
+In the product return session, the model remained in `Assess` because the user had provided order and timing details but had not yet provided defect evidence or troubleshooting results:
+
+```text
+Assess -> Assess
+Reason: still need defect evidence and troubleshooting results before approving the return
+```
+
+This suggests that a resident state machine should explicitly allow state retention when more evidence is needed. Without that option, the model may be forced into premature approval, denial, closure, or escalation.
+
+### 9.3 Traceability Of Reasoning
+
+The transcript structure makes the model's execution path auditable. Each assistant turn records:
+
+- State before response.
+- State after response.
+- Natural-language transition reason.
+- Raw model output.
+
+This allows post-hoc analysis of both task response quality and state transition quality. Instead of asking only whether the assistant's text sounded reasonable, the reviewer can ask whether the model was executing the correct state and whether the selected transition followed the machine definition.
+
+### 9.4 Early Findings
+
+These initial transcripts support three early observations:
+
+1. A resident state machine can keep the model oriented around a specific workflow across turns.
+2. Transition reasoning provides useful audit material for explaining state movement.
+3. The ability to remain in the current state is important for avoiding premature task closure.
+
+These observations are preliminary. The transcript set is small, hand-designed, and domain-specific. A stronger evaluation would require repeated trials, adversarial user inputs, independent scoring of transition correctness, and comparison against prompts without resident state machines.
+
+## 10. Explicit Non-Goals
 
 This paper does not address:
 
@@ -178,7 +272,7 @@ This paper does not address:
 
 These may be useful extensions, but including them here would dilute the central claim.
 
-## 10. Future Work
+## 11. Future Work
 
 Future papers can build outward from this foundation:
 
@@ -189,7 +283,7 @@ Future papers can build outward from this foundation:
 
 Each extension should preserve the core discipline of making execution state explicit, inspectable, and resident in context.
 
-## 11. Conclusion
+## 12. Conclusion
 
 A resident state machine offers a narrow, inspectable mechanism for constraining LLM execution across interactions. By embedding the machine directly into context, the model can act as a state executor rather than a free-form conversational agent.
 
