@@ -140,7 +140,7 @@ Resolve -> Escalate
 Escalate -> Close
 ```
 
-The model does not have to rediscover this workflow on every turn. Instead, the workflow is resident. The model's job is to execute the active state and choose a valid next state.
+The workflow remains explicitly represented throughout execution, reducing reliance on implicit reconstruction from conversational history. The model's job is to execute the active state and choose a valid next state.
 
 ## 8. Experimental Prototype
 
