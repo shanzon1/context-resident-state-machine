@@ -32,6 +32,9 @@ const conversationLog = document.querySelector("#conversationLog");
 const activeSessionLabel = document.querySelector("#activeSessionLabel");
 const newTranscriptButton = document.querySelector("#newTranscriptButton");
 const transcriptSessionList = document.querySelector("#transcriptSessionList");
+const rawDialog = document.querySelector("#rawDialog");
+const rawDialogTitle = document.querySelector("#rawDialogTitle");
+const rawDialogBody = document.querySelector("#rawDialogBody");
 
 const stateList = document.querySelector("#stateList");
 const stateForm = document.querySelector("#stateForm");
@@ -220,13 +223,33 @@ function renderConversation() {
         : turn.role === "user"
           ? "User"
           : "Assistant";
-    item.innerHTML = `<strong></strong><p></p>`;
+    item.innerHTML = `<div class="conversation-turn-meta"><strong></strong></div><p></p>`;
     item.querySelector("strong").textContent = role;
+    if (turn.role === "assistant" && turn.raw) {
+      const rawButton = document.createElement("button");
+      rawButton.type = "button";
+      rawButton.className = "raw-link";
+      rawButton.textContent = "See raw";
+      rawButton.addEventListener("click", () => {
+        showRawDialog(role, turn.raw);
+      });
+      item.querySelector(".conversation-turn-meta").appendChild(rawButton);
+    }
     item.querySelector("p").textContent = turn.content;
     conversationLog.appendChild(item);
   });
 
   conversationLog.scrollTop = conversationLog.scrollHeight;
+}
+
+function showRawDialog(title, rawText) {
+  rawDialogTitle.textContent = title;
+  rawDialogBody.textContent = rawText || "(no raw output saved)";
+  if (typeof rawDialog.showModal === "function") {
+    rawDialog.showModal();
+  } else {
+    alert(rawDialogBody.textContent);
+  }
 }
 
 async function renderTranscriptSessions() {
@@ -273,6 +296,7 @@ async function renderTranscriptSessions() {
             role: message.role,
             content: message.content,
             state: message.role === "assistant" ? message.stateBefore : null,
+            raw: message.role === "assistant" ? message.rawResponse : null,
           }))
         );
         let loadedModel = "loaded";
@@ -623,7 +647,12 @@ testPromptForm.addEventListener("submit", async (event) => {
     const result = await runMachineTest(testContextWindow.textContent, prompt, conversation);
     const assistantMessage = result.assistantMessage || result.text || "(no text returned)";
     setSessionId(result.sessionId);
-    conversation.push({ role: "assistant", content: assistantMessage, state: respondingState });
+    conversation.push({
+      role: "assistant",
+      content: assistantMessage,
+      state: respondingState,
+      raw: result.text,
+    });
     openaiModelLabel.textContent = result.model;
     openaiResponse.textContent = `state: ${result.nextStateName || "none"}\nreason: ${
       result.stateReason || "No state reason returned."

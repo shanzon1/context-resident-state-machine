@@ -496,16 +496,67 @@ button:focus-visible {
   justify-self: start;
 }
 
-.conversation-turn strong {
-  display: block;
+.conversation-turn-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 6px;
+}
+
+.conversation-turn strong {
+  display: inline-block;
   color: var(--muted);
   font-size: 12px;
+}
+
+.raw-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 .conversation-turn p {
   margin: 0;
   line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.raw-dialog {
+  width: min(920px, calc(100vw - 36px));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.raw-dialog::backdrop {
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.raw-dialog-panel {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.raw-dialog pre {
+  overflow: auto;
+  max-height: 70vh;
+  margin: 0;
+  border: 1px solid #263240;
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--code);
+  color: var(--code-text);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
   white-space: pre-wrap;
 }
 
