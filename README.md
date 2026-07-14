@@ -33,7 +33,9 @@ The first page lists created machines and lets the user create/select one. The b
 
 Machine testing is a separate page. It shows the generated LLM context in a scrollable window, then keeps an ongoing conversation below it. Each user message is sent to the backend OpenAI call with the conversation history, valid next states, and transition reasons. The model returns an assistant message plus a next-state decision; the UI reloads the context when the active state changes.
 
-Durability is backed by SQLite in `context_machines.db`. The database has `machines`, `states`, `associations`, and `documents` tables, with state context stored on each state row.
+Durability is backed by SQLite in `context_machines.db`. The database has `machines`, `states`, `associations`, `documents`, `test_sessions`, and `test_messages` tables, with state context stored on each state row.
+
+Test transcripts are saved for analysis. Each successful model turn stores the user message, assistant message, state before, state after, state-change reason, model name, and raw model text. The testing page can start a new test session or reload prior transcripts for the selected machine.
 
 ## Seed A Demo Machine
 

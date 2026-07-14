@@ -1,6 +1,7 @@
 let machines = [];
 let selectedMachineId = null;
 const testConversations = new Map();
+const testSessionIds = new Map();
 
 const libraryPage = document.querySelector("#libraryPage");
 const builderPage = document.querySelector("#builderPage");
@@ -28,6 +29,9 @@ const userPrompt = document.querySelector("#userPrompt");
 const openaiResponse = document.querySelector("#openaiResponse");
 const openaiModelLabel = document.querySelector("#openaiModelLabel");
 const conversationLog = document.querySelector("#conversationLog");
+const activeSessionLabel = document.querySelector("#activeSessionLabel");
+const newTranscriptButton = document.querySelector("#newTranscriptButton");
+const transcriptSessionList = document.querySelector("#transcriptSessionList");
 
 const stateList = document.querySelector("#stateList");
 const stateForm = document.querySelector("#stateForm");
@@ -66,6 +70,14 @@ async function loadMachines() {
 
 async function loadDocuments() {
   return api("/api/documents");
+}
+
+async function loadTestSessions(machineId) {
+  return api(`/api/machines/${machineId}/test-sessions`);
+}
+
+async function loadTestSession(sessionId) {
+  return api(`/api/test-sessions/${sessionId}`);
 }
 
 function getMachine() {
@@ -157,6 +169,8 @@ async function runMachineTest(context, prompt, conversation) {
     method: "POST",
     signal: controller.signal,
     body: JSON.stringify({
+      machineId: machine?.id || null,
+      sessionId: getSessionId(),
       context,
       userPrompt: prompt,
       conversation,
@@ -173,6 +187,19 @@ function getConversation(machineId = selectedMachineId) {
     testConversations.set(machineId, []);
   }
   return testConversations.get(machineId);
+}
+
+function getSessionId(machineId = selectedMachineId) {
+  return testSessionIds.get(machineId) || null;
+}
+
+function setSessionId(sessionId, machineId = selectedMachineId) {
+  if (!machineId) return;
+  if (sessionId) {
+    testSessionIds.set(machineId, sessionId);
+  } else {
+    testSessionIds.delete(machineId);
+  }
 }
 
 function renderConversation() {
@@ -194,6 +221,73 @@ function renderConversation() {
   });
 
   conversationLog.scrollTop = conversationLog.scrollHeight;
+}
+
+async function renderTranscriptSessions() {
+  const machine = getMachine();
+  if (!machine) return;
+
+  activeSessionLabel.textContent = getSessionId() ? `session ${getSessionId()}` : "new session";
+  transcriptSessionList.innerHTML = `<div class="empty-state compact">Loading transcripts...</div>`;
+
+  try {
+    const sessions = await loadTestSessions(machine.id);
+    transcriptSessionList.innerHTML = "";
+
+    if (!sessions.length) {
+      transcriptSessionList.innerHTML = `<div class="empty-state compact">No saved transcripts yet.</div>`;
+      return;
+    }
+
+    sessions.forEach((session) => {
+      const row = document.createElement("article");
+      row.className = "transcript-row";
+      row.classList.toggle("active", session.id === getSessionId());
+
+      const summary = document.createElement("div");
+      summary.className = "transcript-summary";
+      const title = document.createElement("strong");
+      title.textContent = session.title;
+      const detail = document.createElement("span");
+      detail.textContent = `${session.messageCount} messages / ${session.initialState || "none"} -> ${
+        session.currentState || "none"
+      } / ${session.updatedAt}`;
+      summary.append(title, detail);
+
+      const loadButton = document.createElement("button");
+      loadButton.type = "button";
+      loadButton.className = "secondary-button";
+      loadButton.textContent = "Load";
+      loadButton.addEventListener("click", async () => {
+        const transcript = await loadTestSession(session.id);
+        setSessionId(transcript.id);
+        testConversations.set(
+          machine.id,
+          transcript.messages.map((message) => ({
+            role: message.role,
+            content: message.content,
+          }))
+        );
+        let loadedModel = "loaded";
+        for (let index = transcript.messages.length - 1; index >= 0; index -= 1) {
+          if (transcript.messages[index].model) {
+            loadedModel = transcript.messages[index].model;
+            break;
+          }
+        }
+        openaiModelLabel.textContent = loadedModel;
+        openaiResponse.textContent = `loaded transcript\nstate: ${transcript.currentState || "none"}`;
+        renderConversation();
+        renderTestContext();
+        await renderTranscriptSessions();
+      });
+
+      row.append(summary, loadButton);
+      transcriptSessionList.appendChild(row);
+    });
+  } catch (error) {
+    transcriptSessionList.innerHTML = `<div class="empty-state compact">${error.message}</div>`;
+  }
 }
 
 function showLibrary() {
@@ -466,6 +560,7 @@ function renderTest() {
   openaiModelLabel.textContent = "not run";
   openaiResponse.textContent = "Waiting for the next user message.";
   renderConversation();
+  renderTranscriptSessions();
 }
 
 function renderTestContext() {
@@ -519,6 +614,7 @@ testPromptForm.addEventListener("submit", async (event) => {
   try {
     const result = await runMachineTest(testContextWindow.textContent, prompt, conversation);
     const assistantMessage = result.assistantMessage || result.text || "(no text returned)";
+    setSessionId(result.sessionId);
     conversation.push({ role: "assistant", content: assistantMessage });
     openaiModelLabel.textContent = result.model;
     openaiResponse.textContent = `state: ${result.nextStateName || "none"}\nreason: ${
@@ -531,6 +627,7 @@ testPromptForm.addEventListener("submit", async (event) => {
 
     renderConversation();
     renderTestContext();
+    renderTranscriptSessions();
   } catch (error) {
     openaiModelLabel.textContent = "error";
     openaiResponse.textContent =
@@ -539,6 +636,17 @@ testPromptForm.addEventListener("submit", async (event) => {
         : error.message;
     renderConversation();
   }
+});
+
+newTranscriptButton.addEventListener("click", () => {
+  const machine = getMachine();
+  if (!machine) return;
+  setSessionId(null);
+  testConversations.set(machine.id, []);
+  openaiModelLabel.textContent = "not run";
+  openaiResponse.textContent = "Waiting for the next user message.";
+  renderConversation();
+  renderTranscriptSessions();
 });
 
 loadedStateSelect.addEventListener("change", async () => {

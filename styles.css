@@ -434,7 +434,8 @@ button:focus-visible {
 
 .test-prompt-form,
 .openai-response-panel,
-.conversation-panel {
+.conversation-panel,
+.transcript-panel {
   display: grid;
   gap: 10px;
 }
@@ -499,6 +500,45 @@ button:focus-visible {
   margin: 0;
   line-height: 1.45;
   white-space: pre-wrap;
+}
+
+.transcript-list {
+  display: grid;
+  gap: 8px;
+}
+
+.transcript-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--surface);
+}
+
+.transcript-row.active {
+  border-color: var(--accent);
+  background: #e3f5f2;
+}
+
+.transcript-summary {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.transcript-summary strong,
+.transcript-summary span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transcript-summary span {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .documents-shell {

@@ -149,6 +149,17 @@
             <pre id="openaiResponse" class="state-decision">Waiting for the next user message.</pre>
           </section>
 
+          <section class="transcript-panel" aria-labelledby="transcript-title">
+            <div class="section-header">
+              <h2 id="transcript-title">Saved transcripts</h2>
+              <div class="header-actions">
+                <span id="activeSessionLabel" class="count-pill">new session</span>
+                <button id="newTranscriptButton" class="secondary-button" type="button">New session</button>
+              </div>
+            </div>
+            <div id="transcriptSessionList" class="transcript-list"></div>
+          </section>
+
           <form id="testPromptForm" class="test-prompt-form">
             <label for="userPrompt">User message</label>
             <textarea id="userPrompt" name="userPrompt" rows="4" placeholder="Continue the conversation."></textarea>
