@@ -133,23 +133,31 @@
           </div>
         </header>
 
-        <section class="test-shell" aria-labelledby="test-context-title">
-          <div class="section-header">
-            <h2 id="test-context-title">LLM context</h2>
-            <span id="testCurrentState" class="count-pill">state: none</span>
-          </div>
-          <pre id="testContextWindow" class="test-context-window" aria-live="polite"></pre>
-
-          <section class="conversation-panel" aria-labelledby="conversation-title">
+        <section class="test-shell">
+          <div class="test-live-panel" aria-labelledby="test-context-title">
             <div class="section-header">
-              <h2 id="conversation-title">Conversation</h2>
-              <span id="openaiModelLabel" class="count-pill">not run</span>
+              <h2 id="test-context-title">LLM context</h2>
+              <span id="testCurrentState" class="count-pill">state: none</span>
             </div>
-            <div id="conversationLog" class="conversation-log" aria-live="polite"></div>
-            <pre id="openaiResponse" class="state-decision">Waiting for the next user message.</pre>
-          </section>
+            <pre id="testContextWindow" class="test-context-window" aria-live="polite"></pre>
 
-          <section class="transcript-panel" aria-labelledby="transcript-title">
+            <section class="conversation-panel" aria-labelledby="conversation-title">
+              <div class="section-header">
+                <h2 id="conversation-title">Conversation</h2>
+                <span id="openaiModelLabel" class="count-pill">not run</span>
+              </div>
+              <div id="conversationLog" class="conversation-log" aria-live="polite"></div>
+              <pre id="openaiResponse" class="state-decision">Waiting for the next user message.</pre>
+            </section>
+
+            <form id="testPromptForm" class="test-prompt-form">
+              <label for="userPrompt">User message</label>
+              <textarea id="userPrompt" name="userPrompt" rows="4" placeholder="Continue the conversation."></textarea>
+              <button class="primary-button" type="submit">Send</button>
+            </form>
+          </div>
+
+          <aside class="transcript-panel" aria-labelledby="transcript-title">
             <div class="section-header">
               <h2 id="transcript-title">Saved transcripts</h2>
               <div class="header-actions">
@@ -158,13 +166,7 @@
               </div>
             </div>
             <div id="transcriptSessionList" class="transcript-list"></div>
-          </section>
-
-          <form id="testPromptForm" class="test-prompt-form">
-            <label for="userPrompt">User message</label>
-            <textarea id="userPrompt" name="userPrompt" rows="4" placeholder="Continue the conversation."></textarea>
-            <button class="primary-button" type="submit">Send</button>
-          </form>
+          </aside>
         </section>
       </section>
 
